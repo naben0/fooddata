@@ -26,8 +26,18 @@ class UserInfosController {
           }
 
           if (infos.weight) {
-            const query = `INSERT INTO weight (value, date) VALUES (?, ?)`; // Use '?' for placeholders
-            await pool.promise().execute(query, [weight, date = Date.now])
+            const date = Date.now();
+            const weightQuery = `INSERT INTO weight (value, date) VALUES (?, ?)`; // Use '?' for placeholders
+            const [weightResult] = await pool.promise().execute(weightQuery, [weight, date])
+            
+            // Retrieve the auto-generated weight_id
+            weightId = weightResult.insertId;
+
+            // Now you can use weightId to insert into the is_tall table
+            if (weightId) {
+            const weightsQuery = `INSERT INTO weights (weight_id, weight_date, user_id) VALUES (?, ?, ?)`;
+            await pool.promise().execute(weightsQuery, [weightId, date, userId]); // Replace userId with the actual user_id
+            }
           }
 
         //   if (infos.allergens) {
@@ -46,7 +56,19 @@ class UserInfosController {
         try {
             const { userId } = req.params;
 
-            const query = `SELECT username FROM users WHERE user_id = ?`; // Use '?' for placeholders
+            const query = `
+            SELECT
+                h.size AS height,
+                h.date AS height_date,
+                w.value AS weight,
+                w.date AS weight_date
+            FROM
+                is_tall h
+            LEFT JOIN
+                weights w ON h.user_id = w.user_id
+            WHERE
+                h.user_id = ?;
+        `;
 
             const [result] = await pool.promise().execute(query, [userId]);
 
