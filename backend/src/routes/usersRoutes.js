@@ -1,13 +1,13 @@
 import express from 'express';
-import UserController from '../controllers/UserController.js';
+import * as usersController from '../controllers/usersController.js';
 
 const router = express.Router();
 
-// User CRUD
-router.post('/', UserController.createUser);
-router.get('/:userId', UserController.getUserById);
-router.put('/:userId', UserController.updateUserById);
-router.delete('/:userId', UserController.deleteUserById);
+//CRUD
+router.post('/', usersController.createUser);
+router.get('/:userId', usersController.getUserById);
+router.put('/:userId', usersController.updateUser);
+router.delete('/:userId', usersController.deleteUser);
 
 // // Planning of the user (meals)
 // router.post('/:user_id/:meal_id', addMeal);
